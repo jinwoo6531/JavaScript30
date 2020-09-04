@@ -61,9 +61,9 @@
       //3. `audio[data-key="${e.keyCode}"` 백틱과 ""를 뺴고 로그 찍어보기
 
       window.addEventListener("keydown", function (e) {
-        const audio = document.querySelector(`audio[data-key="${e.keyCode}"`);
+        const audio = document.querySelector(`audio[data-key="${e.keyCode}"]`);
         //4. 오디오를 완성했으니 애니메이션효과를 입히기 위해 div태그를 불러온다
-        const key = document.querySelector(`.key[data-key="${e.keyCode}"`);
+        const key = document.querySelector(`.key[data-key="${e.keyCode}"]`);
 
         //1.audio태그중 지정하지 않은 키를 누를 경우 함수를 종료한다.
         if (!audio) return;

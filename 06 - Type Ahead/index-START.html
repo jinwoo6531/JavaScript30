@@ -1,22 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Type Ahead 👀</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Type Ahead :eyes:</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      const endpoint =
+        "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+      const cities = [];
+      //1. fetch를 통해 데이터를 불러 왔으나 무슨 데이터인지 해석불가상황
+      // fetch(endpoint).then(blob => console.log(blob));
+      //fetch(endpoint).then(blob => JSON.parse(blob));
+      //2. json안에 city목록이 있어 전개 연산자로 배열안에 넣어준다.
+      fetch(endpoint)
+        .then((blob) => blob.json())
+        .then((data) => cities.push(...data));
+      //3. 이제 배열안에 넣었으니 검색하면 맞는 주제를 찾아오기 위해 함수 생성
+      function findMatches(wordToMatch, cities) {
+        return cities.filter((place) => {
+          //5. 여기서 우리는 도시 나 주가 검색된 것과 일치하는지 알아 내야한다.
+          //new RegExp는 정규식으로 변환해주는 함수
+          //'gi'의 g는 글로벌(모든 문자와 여러줄 일치),i는 영어 대소문자를 구분 않고 일치시켜줌
+          const regex = new RegExp(wordToMatch, "gi");
+          //4.원래는 return안에 내가 원하는 검색어를 넣어야한다.(정규식)
+          //return palce.city.match(/yokr/i)
+          //city와 state명을 일치시켜준다.
+          return place.city.match(regex) || place.state.match(regex);
+        });
+      }
 
-  <form class="search-form">
-    <input type="text" class="search" placeholder="City or State">
-    <ul class="suggestions">
-      <li>Filter for a city</li>
-      <li>or a state</li>
-    </ul>
-  </form>
-<script>
-const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
 
-</script>
-</body>
+      //6.디스플레이 생성
+      function displayMatches() {
+        //9. console.log(this.value) 확인해보기
+        //11.위에 만들어둔 함수 불러오기
+        const matchArray = findMatches(this.value, cities);
+        //12. matchArray 콘솔 찍어보기
+        const html = matchArray
+          .map((place) => {
+            //15.명소를 강조해주기 위해 정규식 사용
+            const regex = new RegExp(this.value, "gi");
+            const cityName = place.city.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+            const stateName = place.state.replace(
+              regex,
+              `<span class="hl">${this.value}</span>`
+            );
+            //13.
+            // return `
+            //   <li>
+            //     <span class="name">${place.city}, ${place.state} </span>
+            //     <span class="population">${place.population}</span>
+            //   </li>
+            // `
+            //numberWithCommas는 인구수를 포기 위해 만듬
+            return `
+      <li>
+        <span class="name">${cityName}, ${stateName}</span>        
+        <span class="population">${numberWithCommas(place.population)}</span>
+      </li>
+    `;
+          })
+          .join("");
+        //join() 메서드는 배열의 모든 요소를 연결해 하나의 문자열로 만듭니다
+        //const elements = ['Fire', 'Air', 'Water'];
+        //console.log(elements.join());
+        // expected output: "Fire,Air,Water"
+        //14. class suggestions 에 넣어주기
+        suggestions.innerHTML = html;
+      }
+      //7.input창의 검색어를 알기 위해 생성
+      const searchInput = document.querySelector(".search");
+      const suggestions = document.querySelector(".suggestions");
+      //8.이벤트 넣어주기
+      searchInput.addEventListener("change", displayMatches);
+      //10.change 이벤트만 넣어주면 입력이 다끝난후 발동되기 때문에 keyup을 넣어준다.
+      //콘솔로 확인
+      searchInput.addEventListener("keyup", displayMatches);
+    </script>
+  </body>
 </html>
